@@ -1,3 +1,4 @@
+from math import fabs
 import sys
 import cv2
 
@@ -13,9 +14,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
 
         QMainWindow.__init__(self)
-        self.face_recognition = FaceRecognition(0.7)
         self.setupUi(self)
         self.setup_camera()
+        self.face_recognition = FaceRecognition(0.7, self.frame_height, self.frame_width)        
         self.setWindowTitle("Face Recognition Demo")
         self.hide_menus()
         self.quitButton.clicked.connect(self.close)
@@ -54,8 +55,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def setup_camera(self):
         self.capture = cv2.VideoCapture(0)
-        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+        self.frame_height = self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        self.frame_width = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.display_video_stream)

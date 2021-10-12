@@ -4,21 +4,25 @@ import skimage
 import skimage.transform
 import json, base64
 import time 
+import scipy 
 
-from cv_utils import decode_yolov3, preprocess
 from tflite_runtime.interpreter import Interpreter
 
-FACE_ANCHORS = [[[0.51424575, 0.54116074], [0.29523918, 0.45838044], [0.21371929, 0.21518053]],
-               [[0.10255913, 0.42572159], [0.05785894, 0.17925645], [0.01839256, 0.07238193]]]
+from anchors import ANCHOR
 
-IMG_SHAPE = (128, 128) # in HW form 
+IMG_SHAPE = [96, 112]
+OBJ_THRES = 0.7
+NMS_THRES = 0.4
+VARIANCE = [0.1, 0.2]
+
 offset_x = 0
-offset_y = -15
-src = np.array([(44+offset_x, 59+offset_y),
-                (84+offset_x, 59+offset_y),
-                (64+offset_x, 82+offset_y),
-                (47+offset_x, 105),
-                (81+offset_x, 105)], dtype=np.float32)
+offset_y = -5
+
+src = np.array([[32.82394272, 51.69630032+offset_y],
+                [63.02725728, 51.50140016+offset_y],
+                [48.0216,     71.73660032+offset_y],
+                [35.61368544, 92.36549952],
+                [60.625632,   92.20409968]])
 
 def write_db(db, id, name, vector):
     for item in db:
@@ -61,14 +65,100 @@ def clear_db(db_path = 'database.db'):
     f.close()
 
 
+def preprocess_for_fd(img):
+
+    img = img.astype(np.float32)
+    img = (img / 255) - 0.5
+    img = np.expand_dims(img, 0)
+    return img
+
+
+def preprocess_for_fe(img):
+    img = img.astype(np.float32)
+    img = (img - 127.5) / 128.0
+    img = np.expand_dims(img, 0)
+    return img
+
+def pred_boxes(box_output, score_output, ldmk_output):
+    '''
+    generate box information from output
+    :param box_output: 3160*4
+    :param score_output: 3160*2
+    :param ldmk_output: 3160*10
+    :return:
+    '''
+
+    # select boxes greater than threshold probability
+    prob = scipy.special.softmax(score_output, axis=-1)
+    pre_select_boxes_mask = prob[:, 1] > OBJ_THRES
+    pre_select_boxes_index = np.where(pre_select_boxes_mask)[0]
+    pre_select_anchor = ANCHOR[pre_select_boxes_index, :]
+
+    # calculate coordinate
+    box_cord = box_output[pre_select_boxes_index, :]
+    box_cord = np.concatenate((
+        pre_select_anchor[:, :2] + box_cord[:, :2] * VARIANCE[0] * pre_select_anchor[:, 2:],
+        pre_select_anchor[:, 2:] * np.exp(box_cord[:, 2:] * VARIANCE[1])), 1)
+    box_cord[:, :2] -= box_cord[:, 2:] / 2
+    box_cord[:, 2:] += box_cord[:, :2]
+
+    # calculate ldmk coordinate
+    ldmk = ldmk_output[pre_select_boxes_index, :]
+    ldmk[:, 0::2] = pre_select_anchor[:, 0:1] + ldmk[:, 0::2] * VARIANCE[0] * pre_select_anchor[:, 2:3]
+    ldmk[:, 1::2] = pre_select_anchor[:, 1:2] + ldmk[:, 1::2] * VARIANCE[0] * pre_select_anchor[:, 3:4]
+
+    # get prob
+    box_prob = prob[pre_select_boxes_index, 1]
+
+    return box_prob, box_cord, ldmk
+
+def nms_oneclass(bbox: np.ndarray, score: np.ndarray, thresh: float = NMS_THRES) -> np.ndarray:
+
+    '''
+    non maximum suppression by iou
+    :param bbox:
+    :param score:
+    :param thresh:
+    :return:
+    '''
+
+    x1 = bbox[:, 0]
+    y1 = bbox[:, 1]
+    x2 = bbox[:, 2]
+    y2 = bbox[:, 3]
+
+    areas = (x2 - x1 + 1) * (y2 - y1 + 1)
+    order = score.argsort()[::-1]
+
+    keep = []
+    while order.size > 0:
+        i = order[0]
+        keep.append(i)
+        xx1 = np.maximum(x1[i], x1[order[1:]])
+        yy1 = np.maximum(y1[i], y1[order[1:]])
+        xx2 = np.minimum(x2[i], x2[order[1:]])
+        yy2 = np.minimum(y2[i], y2[order[1:]])
+
+        w = np.maximum(0.0, xx2 - xx1 + 1)
+        h = np.maximum(0.0, yy2 - yy1 + 1)
+        inter = w * h
+        ovr = inter / (areas[i] + areas[order[1:]] - inter)
+
+        inds = np.where(ovr <= thresh)[0]
+        order = order[inds + 1]
+
+    return np.array(keep)
+
+
 class NetworkExecutor(object):
 
-    def __init__(self, model_file):
+    def __init__(self, model_file, func):
 
         self.interpreter = Interpreter(model_file, num_threads=3)
         self.interpreter.allocate_tensors()
         _, self.input_height, self.input_width, _ = self.interpreter.get_input_details()[0]['shape']
         self.tensor_index = self.interpreter.get_input_details()[0]['index']
+        self.func = func
 
     def get_output_tensors(self):
 
@@ -84,17 +174,19 @@ class NetworkExecutor(object):
     def run(self, image):
         if image.shape[1:2] != (self.input_height, self.input_width):
             img = cv2.resize(image, (self.input_width, self.input_height))
-        img = preprocess(img)
+        img = self.func(img)
         self.interpreter.set_tensor(self.tensor_index, img)
         self.interpreter.invoke()
         return self.get_output_tensors()
 
 class FaceRecognition():
         
-    def __init__(self, threshold):
-        self.fd_model = NetworkExecutor("face_rec_models/YOLOv3_best_recall_quant.tflite")
-        self.kpts_model = NetworkExecutor("face_rec_models/MobileFaceNet_kpts_quant.tflite")
-        self.fe_model = NetworkExecutor("face_rec_models/inference_model_993_quant.tflite")
+    def __init__(self, threshold, image_height, image_width):
+        self.fd_model = NetworkExecutor("face_rec_models/ulffd_landmark.tflite", preprocess_for_fd)
+        self.fe_model = NetworkExecutor("face_rec_models/inference_model_993_quant.tflite", preprocess_for_fe)
+        self.fd_input_size = [self.fd_model.input_width, self.fd_model.input_height]        
+        self.resize_factors = [image_width / self.fd_model.input_width,
+                               image_height / self.fd_model.input_height]
         self.threshold = float(threshold)
         self.load_db()
 
@@ -104,33 +196,21 @@ class FaceRecognition():
     def unregister_face(self, ID):
         return self.db.pop(ID, None)
 
-    def draw_bounding_boxes(self, frame, detections, kpts, ids):
-
-        def _to_original_scale(boxes, frame_height, frame_width):
-            minmax_boxes = np.empty(shape=(4, ), dtype=np.int)
-
-            cx = boxes[0] * frame_width
-            cy = boxes[1] * frame_height
-            w = boxes[2] * frame_width
-            h = boxes[3] * frame_height
-            
-            minmax_boxes[0] = cx - w/2
-            minmax_boxes[1] = cy - h/2
-            minmax_boxes[2] = cx + w/2
-            minmax_boxes[3] = cy + h/2
-
-            return minmax_boxes
+    def draw_bounding_boxes(self, frame, detections, ids):
 
         color = (0, 255, 0)
         label_color = (125, 125, 125)
+        pred_bbox_pixel, pred_ldmk_pixel, pred_prob = detections
 
-        for i in range(len(detections)):
-            _, box, _ = [d for d in detections[i]]
+        for i in range(len(pred_bbox_pixel)):
+            box = [d for d in pred_bbox_pixel[i]]
 
             # Obtain frame size and resized bounding box positions
             frame_height, frame_width = frame.shape[:2]
 
-            x_min, y_min, x_max, y_max = _to_original_scale(box, frame_height, frame_width)
+            x_min, x_max = [int(position * self.resize_factors[1]) for position in box[0::2]]
+            y_min, y_max = [int(position * self.resize_factors[0]) for position in box[1::2]]  
+
             # Ensure box stays within the frame
             x_min, y_min = max(0, x_min), max(0, y_min)
             x_max, y_max = min(frame_width, x_max), min(frame_height, y_max)
@@ -153,64 +233,29 @@ class FaceRecognition():
             cv2.rectangle(frame, lbl_box_xy_min, lbl_box_xy_max, color, -1)
             cv2.putText(frame, label, lbl_text_pos, cv2.FONT_HERSHEY_DUPLEX, 0.70, label_color, 1, cv2.LINE_AA)
 
-            for kpt_set in kpts:
-                for kpt in kpt_set:
-                    cv2.circle(frame, (int(kpt[0]), int(kpt[1])), 5, (255, 0, 0), 2)
+            kpts = pred_ldmk_pixel[i]
+
+            for kpt in kpts:
+                cv2.circle(frame, (kpt[0], kpt[1]), 5, (255, 0, 0), 2)
 
     def process_faces(self, frame, detections):
-        kpts_list = []
+        
         id_list = []
+        pred_bbox_pixel, pred_ldmk_pixel, pred_prob = detections
 
-        def _to_original_scale(boxes, frame_height, frame_width):
-            minmax_boxes = np.empty(shape=(4, ), dtype=np.int)
+        for i in range(len(pred_ldmk_pixel)):
 
-            cx = boxes[0] * frame_width
-            cy = boxes[1] * frame_height
-            w = boxes[2] * frame_width
-            h = boxes[3] * frame_height
-            
-            minmax_boxes[0] = cx - w/2
-            minmax_boxes[1] = cy - h/2
-            minmax_boxes[2] = cx + w/2
-            minmax_boxes[3] = cy + h/2
-
-            return minmax_boxes
-
-        for i in range(len(detections)):
-            _, box, _ = [d for d in detections[i]]
-
-            # Obtain frame size and resized bounding box positions
-            frame_height, frame_width = frame.shape[:2]
-
-            x_min, y_min, x_max, y_max = _to_original_scale(box, frame_height, frame_width)
-            # Ensure box stays within the frame
-            x_min, y_min = max(0, x_min), max(0, y_min)
-            x_max, y_max = min(frame_width, x_max), min(frame_height, y_max)
-
-            x, y, w, h = x_min, y_min, x_max - x_min, y_max - y_min
-
-            face_img = frame[y_min:y_max, x_min:x_max]
-
-            plist = self.kpts_model.run(face_img)[0]
-
-            le = (x + int(plist[0] * w+5), y + int(plist[1] * h+5))
-            re = (x + int(plist[2] * w), y + int(plist[3] * h+5))
-            n = (x + int(plist[4] * w), y + int(plist[5] * h))
-            lm = (x + int(plist[6] * w), y + int(plist[7] * h))
-            rm = (x + int(plist[8] * w), y + int(plist[9] * h))
-            kpts = [le, re, n, lm, rm]
-            kpts_list.append(kpts)
-            kpts = np.array(kpts, dtype = np.float32)
+            kpts = pred_ldmk_pixel[i]
 
             transformer = skimage.transform.SimilarityTransform() 
             transformer.estimate(kpts, src) 
             M = transformer.params[0: 2, : ] 
-            warped_img = cv2.warpAffine(frame, M, (IMG_SHAPE[1], IMG_SHAPE[0]), borderValue = 0.0) 
+            warped_img = cv2.warpAffine(frame, M, (IMG_SHAPE[0], IMG_SHAPE[1]), borderValue = 0.0) 
+            cv2.imwrite("result.jpg", warped_img)
 
             features = self.fe_model.run(warped_img)[0]
 
             highest_score = 0
-
             for id in self.db.keys():
                 cos_sim = np.dot(features, self.db[id]['vector'])/(np.linalg.norm(features)*np.linalg.norm(self.db[id]['vector']))
                 cos_sim /= 2
@@ -225,87 +270,65 @@ class FaceRecognition():
                 id_list.append([recognized_id, self.db[recognized_id]['name'], highest_score])
             else:
                 id_list.append(['X', '', 0.0])
-        return kpts_list, id_list
+        return id_list
 
 
     def register_face(self, frame, detections, registration_data):
-        kpts_list = []
 
         id, name = registration_data
         id_list = [[id, name, 100.0]]
 
-        def _to_original_scale(boxes, frame_height, frame_width):
-            minmax_boxes = np.empty(shape=(4, ), dtype=np.int)
+        pred_bbox_pixel, pred_ldmk_pixel, pred_prob = detections
 
-            cx = boxes[0] * frame_width
-            cy = boxes[1] * frame_height
-            w = boxes[2] * frame_width
-            h = boxes[3] * frame_height
-            
-            minmax_boxes[0] = cx - w/2
-            minmax_boxes[1] = cy - h/2
-            minmax_boxes[2] = cx + w/2
-            minmax_boxes[3] = cy + h/2
-
-            return minmax_boxes
-
-        if len(detections) > 1:
+        if len(pred_ldmk_pixel) > 1:
             print("More than once face detected, try re-taking the picture")
-            return kpts_list, id_list
+            return id_list
 
-        _, box, _ = [d for d in detections[0]]
-
-        # Obtain frame size and resized bounding box positions
-        frame_height, frame_width = frame.shape[:2]
-
-        x_min, y_min, x_max, y_max = _to_original_scale(box, frame_height, frame_width)
-        # Ensure box stays within the frame
-        x_min, y_min = max(0, x_min), max(0, y_min)
-        x_max, y_max = min(frame_width, x_max), min(frame_height, y_max)
-
-        x, y, w, h = x_min, y_min, x_max - x_min, y_max - y_min
-
-        face_img = frame[y_min:y_max, x_min:x_max]
-
-        plist = self.kpts_model.run(face_img)[0]
-
-        le = (x + int(plist[0] * w+5), y + int(plist[1] * h+5))
-        re = (x + int(plist[2] * w), y + int(plist[3] * h+5))
-        n = (x + int(plist[4] * w), y + int(plist[5] * h))
-        lm = (x + int(plist[6] * w), y + int(plist[7] * h))
-        rm = (x + int(plist[8] * w), y + int(plist[9] * h))
-        kpts = [le, re, n, lm, rm]
-        kpts_list.append(kpts)
-        kpts = np.array(kpts, dtype = np.float32)
+        kpts = pred_ldmk_pixel[0]
 
         transformer = skimage.transform.SimilarityTransform() 
         transformer.estimate(kpts, src) 
         M = transformer.params[0: 2, : ] 
-        warped_img = cv2.warpAffine(frame, M, (IMG_SHAPE[1], IMG_SHAPE[0]), borderValue = 0.0) 
+        warped_img = cv2.warpAffine(frame, M, (IMG_SHAPE[0], IMG_SHAPE[1]), borderValue = 0.0) 
 
         features = self.fe_model.run(warped_img)[0]
-        #print(id)
 
         write_db(self.db, id, name, features)
         self.load_db()
 
-        return kpts_list, id_list
+        return id_list
 
     def process_frame(self, frame, recognition_on, registration_data):
 
         start_time = time.time()
+        detections = []
 
-        results = self.fd_model.run(frame)
-        detections = decode_yolov3(netout = results, nms_threshold = 0.1,
-                                    threshold = self.threshold, anchors = FACE_ANCHORS)
-        if recognition_on:
+        bbox, ldmk, prob = self.fd_model.run(frame)
 
-            kpts, ids = self.process_faces(frame, detections)
-            self.draw_bounding_boxes(frame, detections, kpts, ids)
+        # post processing
+        pred_prob, pred_bbox, pred_ldmk = pred_boxes(bbox, prob, ldmk)
 
-        if registration_data:
-            kpts, ids = self.register_face(frame, detections, registration_data)
-            self.draw_bounding_boxes(frame, detections, kpts, ids)                
+        # calculate bbox corrdinate
+        pred_bbox_pixel = pred_bbox * np.tile(self.fd_input_size, 2)
+        pred_ldmk_pixel = pred_ldmk * np.tile(self.fd_input_size, 5)
+
+        # nms
+        keep = nms_oneclass(pred_bbox_pixel, pred_prob)
+        if len(keep) > 0:
+            pred_bbox_pixel = pred_bbox_pixel[keep, :]
+            pred_ldmk_pixel = pred_ldmk_pixel[keep, :]
+            pred_prob = pred_prob[keep]
+            pred_ldmk_pixel = ((pred_ldmk_pixel).reshape(len(keep), 5, 2)*self.resize_factors).astype(int)
+            detections = pred_bbox_pixel, pred_ldmk_pixel, pred_prob
+
+            if recognition_on:
+
+                ids = self.process_faces(frame, detections)
+                self.draw_bounding_boxes(frame, detections, ids)   
+
+            if registration_data:
+                ids = self.register_face(frame, detections, registration_data)
+                self.draw_bounding_boxes(frame, detections, ids)   
 
         elapsed_ms = (time.time() - start_time) * 1000
         fps  = 1 / elapsed_ms*1000
