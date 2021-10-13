@@ -5,6 +5,7 @@ import cv2
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
+from qt_material import apply_stylesheet
 
 from UI import Ui_MainWindow
 from face_rec import FaceRecognition
@@ -25,6 +26,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.comboBox.currentIndexChanged.connect(self.combo_box_func)
         self.registration_data = None
 
+        apply_stylesheet(self, theme='dark_teal.xml')
+
+        #self.setWindowFlags(Qt.FramelessWindowHint)
+        #self.showFullScreen()
+
     def capture_button_func(self):
         self.registration_data = [int(self.ID.text()), self.name.text()]
         self.hide_menus()
@@ -39,6 +45,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def delete_item(self):
         self.box_delete.show()
+        self.box_delete.move(80, 80)
         self.box_register.hide() 
         self.recognition_on = False
 
@@ -67,6 +74,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = cv2.flip(frame, 1)
         processed_frame = self.face_recognition.process_frame(frame, self.recognition_on, self.registration_data)
+        processed_frame = cv2.resize(processed_frame, (1280, 720))
         self.registration_data = None
 
         image = QImage(processed_frame, processed_frame.shape[1], processed_frame.shape[0], 
