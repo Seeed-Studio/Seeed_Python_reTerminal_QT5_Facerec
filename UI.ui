@@ -70,10 +70,10 @@
    <widget class="QLabel" name="Image">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>-1</y>
-      <width>1271</width>
-      <height>701</height>
+      <x>0</x>
+      <y>0</y>
+      <width>1280</width>
+      <height>720</height>
      </rect>
     </property>
     <property name="text">

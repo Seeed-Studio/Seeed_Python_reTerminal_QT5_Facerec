@@ -35,7 +35,7 @@ class Ui_MainWindow(object):
         self.quitButton.setAutoFillBackground(False)
         self.Image = QLabel(self.centralwidget)
         self.Image.setObjectName(u"Image")
-        self.Image.setGeometry(QRect(10, -1, 1271, 701))
+        self.Image.setGeometry(QRect(0, 0, 1280, 720))
         self.box_register = QWidget(self.centralwidget)
         self.box_register.setObjectName(u"box_register")
         self.box_register.setGeometry(QRect(80, 80, 280, 150))
