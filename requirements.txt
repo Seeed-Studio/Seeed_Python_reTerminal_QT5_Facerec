@@ -1,0 +1,3 @@
+opencv-python~=4.5
+qt-material~=2.8
+scikit-image~=0.18

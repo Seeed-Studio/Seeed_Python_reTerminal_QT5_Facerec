@@ -183,7 +183,7 @@ class FaceRecognition():
         
     def __init__(self, threshold, image_height, image_width):
         self.fd_model = NetworkExecutor("face_rec_models/ulffd_landmark.tflite", preprocess_for_fd)
-        self.fe_model = NetworkExecutor("face_rec_models/inference_model_993_quant.tflite", preprocess_for_fe)
+        self.fe_model = NetworkExecutor("face_rec_models/inference_model_993.tflite", preprocess_for_fe)
         self.fd_input_size = [self.fd_model.input_width, self.fd_model.input_height]        
         self.resize_factors = [image_width / self.fd_model.input_width,
                                image_height / self.fd_model.input_height]
@@ -239,7 +239,7 @@ class FaceRecognition():
                 cv2.circle(frame, (kpt[0], kpt[1]), 5, (255, 0, 0), 2)
 
     def process_faces(self, frame, detections):
-        
+
         id_list = []
         pred_bbox_pixel, pred_ldmk_pixel, pred_prob = detections
 
@@ -251,7 +251,7 @@ class FaceRecognition():
             transformer.estimate(kpts, src) 
             M = transformer.params[0: 2, : ] 
             warped_img = cv2.warpAffine(frame, M, (IMG_SHAPE[0], IMG_SHAPE[1]), borderValue = 0.0) 
-            cv2.imwrite("result.jpg", warped_img)
+            #cv2.imwrite("result.jpg", warped_img)
 
             features = self.fe_model.run(warped_img)[0]
 

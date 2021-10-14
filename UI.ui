@@ -20,10 +20,10 @@
    <widget class="QComboBox" name="comboBox">
     <property name="geometry">
      <rect>
-      <x>9</x>
-      <y>9</y>
-      <width>281</width>
-      <height>25</height>
+      <x>20</x>
+      <y>10</y>
+      <width>491</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="autoFillBackground">
@@ -54,10 +54,10 @@
    <widget class="QPushButton" name="quitButton">
     <property name="geometry">
      <rect>
-      <x>643</x>
-      <y>642</y>
-      <width>80</width>
-      <height>25</height>
+      <x>870</x>
+      <y>610</y>
+      <width>401</width>
+      <height>51</height>
      </rect>
     </property>
     <property name="autoFillBackground">
@@ -70,10 +70,10 @@
    <widget class="QLabel" name="Image">
     <property name="geometry">
      <rect>
-      <x>422</x>
-      <y>40</y>
-      <width>860</width>
-      <height>480</height>
+      <x>10</x>
+      <y>-1</y>
+      <width>1271</width>
+      <height>701</height>
      </rect>
     </property>
     <property name="text">
@@ -83,10 +83,10 @@
    <widget class="QWidget" name="box_register" native="true">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>100</y>
-      <width>191</width>
-      <height>89</height>
+      <x>80</x>
+      <y>80</y>
+      <width>280</width>
+      <height>150</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout">
@@ -130,10 +130,10 @@
    <widget class="QWidget" name="box_delete" native="true">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>220</y>
-      <width>165</width>
-      <height>58</height>
+      <x>80</x>
+      <y>230</y>
+      <width>271</width>
+      <height>121</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout_2">
@@ -160,6 +160,11 @@
      </item>
     </layout>
    </widget>
+   <zorder>Image</zorder>
+   <zorder>comboBox</zorder>
+   <zorder>quitButton</zorder>
+   <zorder>box_register</zorder>
+   <zorder>box_delete</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
