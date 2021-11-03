@@ -21,14 +21,16 @@ class Ui_MainWindow(object):
         MainWindow.setWindowOpacity(1.000000000000000)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.comboBox = QComboBox(self.centralwidget)
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.setObjectName(u"comboBox")
-        self.comboBox.setGeometry(QRect(20, 10, 491, 41))
-        self.comboBox.setAutoFillBackground(False)
-        self.comboBox.setEditable(False)
+        self.menuBox = QComboBox(self.centralwidget)
+        self.menuBox.addItem("")
+        self.menuBox.addItem("")
+        self.menuBox.addItem("")
+        self.menuBox.addItem("")
+        self.menuBox.addItem("")
+        self.menuBox.setObjectName(u"menuBox")
+        self.menuBox.setGeometry(QRect(20, 10, 491, 41))
+        self.menuBox.setAutoFillBackground(False)
+        self.menuBox.setEditable(False)
         self.quitButton = QPushButton(self.centralwidget)
         self.quitButton.setObjectName(u"quitButton")
         self.quitButton.setGeometry(QRect(870, 610, 401, 51))
@@ -86,12 +88,86 @@ class Ui_MainWindow(object):
 
         self.formLayout_2.setWidget(1, QFormLayout.FieldRole, self.remove_button)
 
+        self.box_mqtt = QWidget(self.centralwidget)
+        self.box_mqtt.setObjectName(u"box_mqtt")
+        self.box_mqtt.setGeometry(QRect(80, 360, 271, 131))
+        self.formLayout_4 = QFormLayout(self.box_mqtt)
+        self.formLayout_4.setObjectName(u"formLayout_4")
+        self.address_label = QLabel(self.box_mqtt)
+        self.address_label.setObjectName(u"address_label")
+
+        self.formLayout_4.setWidget(0, QFormLayout.LabelRole, self.address_label)
+
+        self.address = QLineEdit(self.box_mqtt)
+        self.address.setObjectName(u"address")
+
+        self.formLayout_4.setWidget(0, QFormLayout.FieldRole, self.address)
+
+        self.port_label = QLabel(self.box_mqtt)
+        self.port_label.setObjectName(u"port_label")
+
+        self.formLayout_4.setWidget(1, QFormLayout.LabelRole, self.port_label)
+
+        self.port = QLineEdit(self.box_mqtt)
+        self.port.setObjectName(u"port")
+
+        self.formLayout_4.setWidget(1, QFormLayout.FieldRole, self.port)
+
+        self.mqtt_button = QPushButton(self.box_mqtt)
+        self.mqtt_button.setObjectName(u"mqtt_button")
+
+        self.formLayout_4.setWidget(2, QFormLayout.SpanningRole, self.mqtt_button)
+
+        self.box_gpio = QWidget(self.centralwidget)
+        self.box_gpio.setObjectName(u"box_gpio")
+        self.box_gpio.setGeometry(QRect(80, 520, 271, 131))
+        self.formLayout_5 = QFormLayout(self.box_gpio)
+        self.formLayout_5.setObjectName(u"formLayout_5")
+        self.pin_label = QLabel(self.box_gpio)
+        self.pin_label.setObjectName(u"pin_label")
+
+        self.formLayout_5.setWidget(0, QFormLayout.LabelRole, self.pin_label)
+
+        self.pin = QLineEdit(self.box_gpio)
+        self.pin.setObjectName(u"pin")
+
+        self.formLayout_5.setWidget(0, QFormLayout.FieldRole, self.pin)
+
+        self.stateBox = QComboBox(self.box_gpio)
+        self.stateBox.addItem("")
+        self.stateBox.addItem("")
+        self.stateBox.setObjectName(u"stateBox")
+
+        self.formLayout_5.setWidget(1, QFormLayout.FieldRole, self.stateBox)
+
+        self.gpio_button = QPushButton(self.box_gpio)
+        self.gpio_button.setObjectName(u"gpio_button")
+
+        self.formLayout_5.setWidget(2, QFormLayout.SpanningRole, self.gpio_button)
+
+        self.state_label = QLabel(self.box_gpio)
+        self.state_label.setObjectName(u"state_label")
+
+        self.formLayout_5.setWidget(1, QFormLayout.LabelRole, self.state_label)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.Image.raise_()
-        self.comboBox.raise_()
+        self.menuBox.raise_()
         self.quitButton.raise_()
         self.box_register.raise_()
         self.box_delete.raise_()
+        self.address_label.raise_()
+        self.port_label.raise_()
+        self.mqtt_button.raise_()
+        self.address.raise_()
+        self.port.raise_()
+        self.pin_label.raise_()
+        self.state_label.raise_()
+        self.stateBox.raise_()
+        self.pin.raise_()
+        self.gpio_button.raise_()
+        self.box_mqtt.raise_()
+        self.box_gpio.raise_()
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
         self.menubar.setGeometry(QRect(0, 0, 1280, 22))
@@ -107,11 +183,13 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-        self.comboBox.setItemText(0, "")
-        self.comboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Register New User", None))
-        self.comboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"Delete User ID", None))
+        self.menuBox.setItemText(0, "")
+        self.menuBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Register New User", None))
+        self.menuBox.setItemText(2, QCoreApplication.translate("MainWindow", u"Delete User ID", None))
+        self.menuBox.setItemText(3, QCoreApplication.translate("MainWindow", u"Configure MQTT", None))
+        self.menuBox.setItemText(4, QCoreApplication.translate("MainWindow", u"Configure GPIO", None))
 
-        self.comboBox.setCurrentText("")
+        self.menuBox.setCurrentText("")
         self.quitButton.setText(QCoreApplication.translate("MainWindow", u"Quit", None))
         self.Image.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.ID_label.setText(QCoreApplication.translate("MainWindow", u"ID", None))
@@ -122,5 +200,17 @@ class Ui_MainWindow(object):
         self.ID_label_2.setText(QCoreApplication.translate("MainWindow", u"ID", None))
         self.ID_2.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.remove_button.setText(QCoreApplication.translate("MainWindow", u"Remove User ID", None))
+        self.address_label.setText(QCoreApplication.translate("MainWindow", u"Address", None))
+        self.address.setText(QCoreApplication.translate("MainWindow", u"localhost", None))
+        self.port_label.setText(QCoreApplication.translate("MainWindow", u"Port", None))
+        self.port.setText(QCoreApplication.translate("MainWindow", u"1883", None))
+        self.mqtt_button.setText(QCoreApplication.translate("MainWindow", u"Start/Stop MQTT", None))
+        self.pin_label.setText(QCoreApplication.translate("MainWindow", u"Pin", None))
+        self.pin.setText(QCoreApplication.translate("MainWindow", u"17", None))
+        self.stateBox.setItemText(0, QCoreApplication.translate("MainWindow", u"HIGH", None))
+        self.stateBox.setItemText(1, QCoreApplication.translate("MainWindow", u"LOW", None))
+
+        self.gpio_button.setText(QCoreApplication.translate("MainWindow", u"Start/Stop GPIO control", None))
+        self.state_label.setText(QCoreApplication.translate("MainWindow", u"Active state", None))
     # retranslateUi
 

@@ -5,6 +5,7 @@ import skimage.transform
 import json, base64
 import time 
 import scipy 
+import logging
 
 from tflite_runtime.interpreter import Interpreter
 
@@ -16,7 +17,7 @@ NMS_THRES = 0.4
 VARIANCE = [0.1, 0.2]
 
 offset_x = 0
-offset_y = -5
+offset_y = -20
 
 src = np.array([[32.82394272, 51.69630032+offset_y],
                 [63.02725728, 51.50140016+offset_y],
@@ -265,8 +266,8 @@ class FaceRecognition():
                     highest_score = cos_sim
                     recognized_id = id
                     
-            if highest_score > 70.0:
-                print(recognized_id, self.db[recognized_id]['name'], highest_score)
+            if highest_score > 65.0:
+                logging.info("ID: {} Name: {} {:.2f}%".format(recognized_id, self.db[recognized_id]['name'], highest_score))
                 id_list.append([recognized_id, self.db[recognized_id]['name'], highest_score])
             else:
                 id_list.append(['X', '', 0.0])
@@ -281,7 +282,7 @@ class FaceRecognition():
         pred_bbox_pixel, pred_ldmk_pixel, pred_prob = detections
 
         if len(pred_ldmk_pixel) > 1:
-            print("More than once face detected, try re-taking the picture")
+            logging.error("More than once face detected, try re-taking the picture")
             return id_list
 
         kpts = pred_ldmk_pixel[0]
@@ -302,6 +303,7 @@ class FaceRecognition():
 
         start_time = time.time()
         detections = []
+        ids = []
 
         bbox, ldmk, prob = self.fd_model.run(frame)
 
@@ -332,6 +334,6 @@ class FaceRecognition():
 
         elapsed_ms = (time.time() - start_time) * 1000
         fps  = 1 / elapsed_ms*1000
-        print("Estimated frames per second : {0:.2f} Inference time: {1:.2f}".format(fps, elapsed_ms))
+        logging.info("Estimated frames per second : {0:.2f} Inference time: {1:.2f}".format(fps, elapsed_ms))
 
-        return frame
+        return frame, ids

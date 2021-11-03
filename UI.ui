@@ -17,7 +17,7 @@
    <double>1.000000000000000</double>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QComboBox" name="comboBox">
+   <widget class="QComboBox" name="menuBox">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -48,6 +48,16 @@
     <item>
      <property name="text">
       <string>Delete User ID</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Configure MQTT</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Configure GPIO</string>
      </property>
     </item>
    </widget>
@@ -160,11 +170,124 @@
      </item>
     </layout>
    </widget>
+   <widget class="QWidget" name="box_mqtt" native="true">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>360</y>
+      <width>271</width>
+      <height>131</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="formLayout_4">
+     <item row="0" column="0">
+      <widget class="QLabel" name="address_label">
+       <property name="text">
+        <string>Address</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="address">
+       <property name="text">
+        <string>localhost</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="port_label">
+       <property name="text">
+        <string>Port</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="port">
+       <property name="text">
+        <string>1883</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0" colspan="2">
+      <widget class="QPushButton" name="mqtt_button">
+       <property name="text">
+        <string>Start/Stop MQTT</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="box_gpio" native="true">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>520</y>
+      <width>271</width>
+      <height>131</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="formLayout_5">
+     <item row="0" column="0">
+      <widget class="QLabel" name="pin_label">
+       <property name="text">
+        <string>Pin</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="pin">
+       <property name="text">
+        <string>17</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="stateBox">
+       <item>
+        <property name="text">
+         <string>HIGH</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>LOW</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="2" column="0" colspan="2">
+      <widget class="QPushButton" name="gpio_button">
+       <property name="text">
+        <string>Start/Stop GPIO control</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="state_label">
+       <property name="text">
+        <string>Active state</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
    <zorder>Image</zorder>
-   <zorder>comboBox</zorder>
+   <zorder>menuBox</zorder>
    <zorder>quitButton</zorder>
    <zorder>box_register</zorder>
    <zorder>box_delete</zorder>
+   <zorder>address_label</zorder>
+   <zorder>port_label</zorder>
+   <zorder>mqtt_button</zorder>
+   <zorder>address</zorder>
+   <zorder>port</zorder>
+   <zorder>pin_label</zorder>
+   <zorder>state_label</zorder>
+   <zorder>stateBox</zorder>
+   <zorder>pin</zorder>
+   <zorder>gpio_button</zorder>
+   <zorder>box_mqtt</zorder>
+   <zorder>box_gpio</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
