@@ -206,7 +206,7 @@ class Ui_MainWindow(object):
         self.port.setText(QCoreApplication.translate("MainWindow", u"1883", None))
         self.mqtt_button.setText(QCoreApplication.translate("MainWindow", u"Start/Stop MQTT", None))
         self.pin_label.setText(QCoreApplication.translate("MainWindow", u"Pin", None))
-        self.pin.setText(QCoreApplication.translate("MainWindow", u"17", None))
+        self.pin.setText(QCoreApplication.translate("MainWindow", u"16", None))
         self.stateBox.setItemText(0, QCoreApplication.translate("MainWindow", u"HIGH", None))
         self.stateBox.setItemText(1, QCoreApplication.translate("MainWindow", u"LOW", None))
 

@@ -1,18 +1,24 @@
-import RPi.GPIO as GPIO
+from gpiozero import DigitalOutputDevice
 import time
 import threading
 import logging 
 
 class AddonGPIO:
 
-    def __init__(self, pin = 17, active_state = True):
+    def __init__(self, pin = 16, active_state = True):
         self.is_active = False
         self.pin = pin
         self.active_state = active_state
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.pin, GPIO.OUT)
+        self.device = DigitalOutputDevice(pin=pin, active_high=active_state)
 
-    def control_gpio(self):
+    def __del__(self):
+        try:
+            self.device.off()
+            self.device.close()
+        except AttributeError:
+            pass
+
+    def activate_gpio(self):
 
         if not self.is_active:
             self.is_active = True
@@ -25,9 +31,15 @@ class AddonGPIO:
         start_time = time.time()
 
         logging.info("GPIO activated")
+        self.device.on()
         while (time.time() - start_time) < duration:
-            GPIO.output(self.pin, self.active_state)
+            time.sleep(0.001)
         logging.info("GPIO deactivated")
 
         self.is_active = False
-        GPIO.output(self.pin, not self.active_state)
+        self.device.off()
+
+if __name__ == "__main__":
+    GPIO = AddonGPIO(16, True)
+    GPIO.activate_gpio()
+    print("kk")

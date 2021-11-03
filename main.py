@@ -32,7 +32,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.gpio_button.clicked.connect(self.gpio_button_func)
         self.mqtt_button.clicked.connect(self.mqtt_button_func)        
         self.menuBox.currentIndexChanged.connect(self.combo_box_func)
-        self.stateBox.currentIndexChanged.connect(self.state_box_func)        
+        self.stateBox.currentIndexChanged.connect(self.state_box_func)
+        self.active_state = True        
         self.registration_data = None
         self.MQTT_state = False
         self.GPIO_state = False
@@ -82,7 +83,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         combo_box_functions[i]()
 
     def state_box_func(self, i):
-        self.active_state = int(i)
+        self.active_state = not bool(i)
 
     def delete_item(self):
         self.box_delete.show()
@@ -133,7 +134,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.MQTT.send_data("face_rec/verified", 1)
 
         if len(ids) > 0 and self.GPIO_state:
-            self.GPIO.control_gpio()
+            self.GPIO.activate_gpio()
 
         image = qimage2ndarray.array2qimage(processed_frame)
         self.Image.setPixmap(QPixmap.fromImage(image))

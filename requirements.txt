@@ -1,3 +1,6 @@
 opencv-python~=4.5
 qt-material~=2.8
 scikit-image~=0.18
+qimage2ndarray~=1.8
+paho-mqtt~=1.6
+gpiozero
