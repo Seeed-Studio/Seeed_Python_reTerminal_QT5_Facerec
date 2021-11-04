@@ -11,6 +11,8 @@ from tflite_runtime.interpreter import Interpreter
 
 from anchors import ANCHOR
 
+from addons.postgres_addon import read_db, add_entry, delete_entry
+
 IMG_SHAPE = [96, 112]
 OBJ_THRES = 0.7
 NMS_THRES = 0.4
@@ -25,54 +27,12 @@ src = np.array([[32.82394272, 51.69630032+offset_y],
                 [35.61368544, 92.36549952],
                 [60.625632,   92.20409968]])
 
-def write_db(db, id, name, vector):
-    for item in db:
-        db[item]['vector'] = base64.b64encode(db[item]['vector']).decode('utf-8')
-
-    vector = base64.b64encode(vector).decode('utf-8')
-    entry = {"name": name, "vector": vector}
-    db[id] = entry
-    print(db)
-    f = open('resources/database.db','w')
-    entry = json.dumps(db)
-    f.write(entry)
-    f.close()
-
-    return db
-
-def read_db(db_path = 'resources/database.db'):
-    try:
-        f = open(db_path, 'r')
-    except FileNotFoundError:
-        clear_db(db_path)
-        f = open(db_path, 'r')
-
-    content = f.read()
-    if content:
-        db = json.loads(content)
-    f.close()
-
-    for item in db:
-        db[item]['vector'] = np.frombuffer(base64.b64decode(db[item]['vector']), np.float32)
-
-    return db
-
-def clear_db(db_path = 'database.db'):
-
-    f = open(db_path,'w')
-    db = {}
-    content = json.dumps(db)
-    f.write(content)
-    f.close()
-
-
 def preprocess_for_fd(img):
 
     img = img.astype(np.float32)
     img = (img / 255) - 0.5
     img = np.expand_dims(img, 0)
     return img
-
 
 def preprocess_for_fe(img):
     img = img.astype(np.float32)
@@ -192,10 +152,10 @@ class FaceRecognition():
         self.load_db()
 
     def load_db(self):
-        self.db = read_db("resources/database.db")
+        self.db = read_db()
 
     def unregister_face(self, ID):
-        return self.db.pop(ID, None)
+        return delete_entry(ID)
 
     def draw_bounding_boxes(self, frame, detections, ids):
 
@@ -294,7 +254,7 @@ class FaceRecognition():
 
         features = self.fe_model.run(warped_img)[0]
 
-        write_db(self.db, id, name, features)
+        add_entry(id, name, features)
         self.load_db()
 
         return id_list

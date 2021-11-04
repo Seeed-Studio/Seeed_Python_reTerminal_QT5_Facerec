@@ -156,6 +156,16 @@ if (__name__ == '__main__'):
         default=False,
         help='whether to have GPIO adddon')
 
+    argparser.add_argument(
+        '--db_address',
+        default="127.0.0.1",
+        help='address of PostgreSQL db')
+
+    argparser.add_argument(
+        '--db_port',
+        default="5432",
+        help='port of PostgreSQL db')
+
     args = argparser.parse_args()
 
     if args.use_mqtt:
