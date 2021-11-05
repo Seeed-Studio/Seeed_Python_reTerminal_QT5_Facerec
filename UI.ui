@@ -22,9 +22,14 @@
      <rect>
       <x>20</x>
       <y>10</y>
-      <width>491</width>
-      <height>41</height>
+      <width>511</width>
+      <height>51</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
     </property>
     <property name="autoFillBackground">
      <bool>false</bool>
@@ -64,11 +69,16 @@
    <widget class="QPushButton" name="quitButton">
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>610</y>
-      <width>401</width>
-      <height>51</height>
+      <x>750</x>
+      <y>670</y>
+      <width>520</width>
+      <height>50</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+     </font>
     </property>
     <property name="autoFillBackground">
      <bool>false</bool>
@@ -95,7 +105,7 @@
      <rect>
       <x>80</x>
       <y>80</y>
-      <width>280</width>
+      <width>360</width>
       <height>150</height>
      </rect>
     </property>
@@ -109,6 +119,17 @@
      </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="ID">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>0</string>
        </property>
@@ -123,6 +144,17 @@
      </item>
      <item row="1" column="1">
       <widget class="QLineEdit" name="name">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>John Doe</string>
        </property>
@@ -130,6 +162,12 @@
      </item>
      <item row="2" column="0" colspan="2">
       <widget class="QPushButton" name="capture_button">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
        <property name="text">
         <string>Capture</string>
        </property>
@@ -142,8 +180,8 @@
      <rect>
       <x>80</x>
       <y>230</y>
-      <width>271</width>
-      <height>121</height>
+      <width>360</width>
+      <height>101</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout_2">
@@ -156,6 +194,17 @@
      </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="ID_2">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>0</string>
        </property>
@@ -163,6 +212,12 @@
      </item>
      <item row="1" column="1">
       <widget class="QPushButton" name="remove_button">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
        <property name="text">
         <string>Remove User ID</string>
        </property>
@@ -175,8 +230,8 @@
      <rect>
       <x>80</x>
       <y>360</y>
-      <width>271</width>
-      <height>131</height>
+      <width>360</width>
+      <height>150</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout_4">
@@ -189,6 +244,17 @@
      </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="address">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>localhost</string>
        </property>
@@ -203,6 +269,17 @@
      </item>
      <item row="1" column="1">
       <widget class="QLineEdit" name="port">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>1883</string>
        </property>
@@ -210,6 +287,12 @@
      </item>
      <item row="2" column="0" colspan="2">
       <widget class="QPushButton" name="mqtt_button">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
        <property name="text">
         <string>Start/Stop MQTT</string>
        </property>
@@ -222,8 +305,8 @@
      <rect>
       <x>80</x>
       <y>520</y>
-      <width>271</width>
-      <height>131</height>
+      <width>360</width>
+      <height>150</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout_5">
@@ -236,6 +319,17 @@
      </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="pin">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>17</string>
        </property>
@@ -243,6 +337,17 @@
      </item>
      <item row="1" column="1">
       <widget class="QComboBox" name="stateBox">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
        <item>
         <property name="text">
          <string>HIGH</string>
@@ -257,6 +362,12 @@
      </item>
      <item row="2" column="0" colspan="2">
       <widget class="QPushButton" name="gpio_button">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
        <property name="text">
         <string>Start/Stop GPIO control</string>
        </property>
@@ -276,16 +387,6 @@
    <zorder>quitButton</zorder>
    <zorder>box_register</zorder>
    <zorder>box_delete</zorder>
-   <zorder>address_label</zorder>
-   <zorder>port_label</zorder>
-   <zorder>mqtt_button</zorder>
-   <zorder>address</zorder>
-   <zorder>port</zorder>
-   <zorder>pin_label</zorder>
-   <zorder>state_label</zorder>
-   <zorder>stateBox</zorder>
-   <zorder>pin</zorder>
-   <zorder>gpio_button</zorder>
    <zorder>box_mqtt</zorder>
    <zorder>box_gpio</zorder>
   </widget>
